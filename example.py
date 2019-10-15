@@ -4,9 +4,9 @@ linda.connect()
 # Exemplo de arquivo que escreve e le do tuplespace
 
 blog = linda.TupleSpace()
-linda.universe._out(("MicroBlog",blog))
+linda.universe._out(("Blog",blog))
 
-blog = linda.universe._rd(("MicroBlog",linda.TupleSpace))[1]
+blog = linda.universe._rd(("Blog",linda.TupleSpace))[1]
 
 blog._out(("bob","distsys","I am studying chap 2"))
 blog._out(("bob","distsys","The linda example's pretty simple"))

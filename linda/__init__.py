@@ -1,16 +1,13 @@
 #-*- coding: utf-8 -*-
 from . import utils
 from socket  import *
-from constCS import * #-
+from host_port import * #-
 import atexit
-
 
 s = socket(AF_INET, SOCK_STREAM)
 
 def connect():
-	"""
-		Começa o servidor
-	"""
+	#Starts server
 	s.connect((HOST, PORT)) # connect to server (block until accepted)
 	print("conected")
 	atexit.register(exit_handler)
@@ -21,17 +18,12 @@ def exit_handler():
     s.close()
 
 def __del__():
-	"""
-		Encerra o servidor
-	"""
+	#Ends server
 	print("desconected")
 	s.close()
 
 
 class TupleSpace:
-
-	# Marcar ate qual mensagem a pessoa X leu
-	# Interagir com a tuplespace (chamar os metodos dela)
 
 	def __init__(self, **kwargs):
 		if kwargs and len(kwargs) == 1 and "blog_name" in kwargs:
@@ -45,17 +37,17 @@ class TupleSpace:
 
 	def _rd(self, t):
 		"""
-			:param publisher: nome do cliente que publicou a mensagem que sera lida
-			:param topic: nome do grupo do qual quer ler a mensagem
-			:param type_return: tipo da mensagem a ser lida
+			:param publisher: name of the author of the message
+			:param topic: name of the topic on which the message will be published
+			:param type_return: tyoe of the message to be read
 			:return:
 		"""
 		publisher, topic, type_return = t
 		print("\nReading messages from {} at {}".format(publisher, topic))
 
-		# Formando a tupla a enviar em formato string
+		# Making tuple
 		msg_send = utils.tuple_to_bin((publisher, topic, type_return), "rd")
-		s.send(msg_send)
+		s.send(msg_send)	
 		tuple_list_bin = b''
 		r = b''
 		while r.decode() != "." :
@@ -65,41 +57,50 @@ class TupleSpace:
 		if tuple_list:
 			messages = ""
 			for tpl in tuple_list:
-				messages += "topic " + tpl[1] + " " + tpl[0] + " said: " + tpl[2] + "\n"
-
+				messages += "Topic " + tpl[1] + " " + tpl[0] + " said: " + tpl[2] + "\n"
+				print("Topic " + tpl[1] + " " + tpl[0] + " said: " + tpl[2] + "\n")
 			return messages
 		else:
+			print(publisher + " didn't published in this topic or " + topic + " doesn't exist")
 			return publisher + " didn't published in this topic or " + topic + " doesn't exist"
     
 	def _in(self, t):
 		"""
-			:param publisher: nome do cliente que publicou a mensagem que sera apagada
-			:param topic: nome do grupo do qual quer apagar a mensagem
-			:param type_return: mensagem a ser apagada
+			:param publisher: name of the author which message will be deleted 
+			:param topic: name of the topic on which the message will be deleted
+			:param type_return: message to be deleted
 			:return:
 		"""
 		publisher, topic, content = t
 		print("\nDeleting message '{}' from {} at {}".format(content, publisher, topic))
-		# Formando a tupla a enviar em formato string
+		# Making tuple
 		msg_send = utils.tuple_to_bin((publisher, topic, content), "in")
 		s.send(msg_send)
 
+		r = s.recv(1)
+
+		if r == b"0":
+			print("\nMessage doesn't exist in topic")
+			return content + " doesn't exist in topic " + topic
+		else:
+			print("\nMessage deleted!")
+			return "Deleting message '{}' from {} at {}".format(content, publisher, topic)
+
 	def _out(self, t):
 		"""
-			:param publisher: nome do cliente que envia a mensagem
-			:param topic: nome do grupo para qual envia a mensagem
-			:param content: mensagem 
+			:param publisher: name of the author
+			:param topic: name of the topic on which the message will be posted 
+			:param content: message 
 			:return:
 		"""
 		publisher, topic, content = t
 		print("\nWriting message '{}' from {} at {}".format(content, publisher, topic))
 
-		# Exibindo na tela as informações da última mensagem recebida
-		# print("grupo", topic, self.dictionary[topic][-1][0], "disse:", self.dictionary[topic][-1][1])
-
-		# Formando a tupla a enviar em formato string
+		# Making tuple
 		msg_send = utils.tuple_to_bin((publisher, topic, content), "out")
 		s.send(msg_send)  # send some data
+
+		return "Writing message '{}' from {} at {}".format(content, publisher, topic)
 
 
 	def set_name(self, new_name):
@@ -111,9 +112,7 @@ class Universe():
 		pass
 	
 	def _rd(self, t):
-		"""
-			:return: lista/tupla (?) que contem um blog
-		"""
+
 		blog_name, tuplespace_class = t
 
 		if tuplespace_class == TupleSpace:

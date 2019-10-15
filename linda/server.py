@@ -45,14 +45,14 @@ class ServerThread(Thread):
         self.lock.acquire()
         (publisher, topic, content) = tuple
 
-        # Se o topic eh novo
+        # If its a new topic
         if topic not in self.dictionary.keys():
             self.dictionary[topic] = []
 
-        # Adicionando nova content ao topic
+        # Adding new content to topic
         self.dictionary[topic].append((publisher, content))
 
-        # Exibindo na tela as informacoes da ultima content recebida
+        # Prints the latest topic received
         print("topic", topic, self.dictionary[topic][-1][0], "said:", self.dictionary[topic][-1][1])
         self.lock.release()
 
@@ -64,7 +64,7 @@ class ServerThread(Thread):
         while(True):
             if topic in self.dictionary:
                 for tpl in self.dictionary[topic]:
-                    # Pega a primeira mensagem que encontra daquele autor naquele topico
+                    # Uses the first topic posted by that author
                     if tpl[0] == publisher:
                         tuples_to_send.append((tpl[0],topic,tpl[1]))
 
@@ -73,8 +73,8 @@ class ServerThread(Thread):
                 break
             else:
                 self.lock.release()
-                sleep(5)
                 self.lock.acquire()
+                break
                 
         list_as_bin = list_to_bin(tuples_to_send)
         conn.send(list_as_bin)
@@ -103,9 +103,14 @@ class ServerThread(Thread):
                         break
             if(not found):
                 self.lock.release()
-                sleep(5)
                 self.lock.acquire()
+                break
+        if found:
+            conn.send(b"1")
+        else:
+            conn.send(b"0")
         self.lock.release()
+
 
     def __del__(self):
         if self.conn:
