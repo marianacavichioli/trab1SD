@@ -31,3 +31,8 @@ Para testar a API é necessário utilizar um software de teste, como o [Insomnia
 $ python server.py
 $ python app.py
 ```
+
+----------------------------------------------------------------------
+**Mariana Cavichioli Silva - 726568**
+
+**Rafael Bastos Saito - 726580**
